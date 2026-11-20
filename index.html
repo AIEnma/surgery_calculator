@@ -31,29 +31,20 @@
         padding: 16px;
       }
       .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-right: 320px;
         background: linear-gradient(120deg, #087e8b, #23b8c4);
         color: white;
-        padding: 25px;
-        border-radius: 18px 18px 0 0;
-      }
-      .navbar-brand {
-        width: 100%;
-        display: block;
-        line-height: 0;
-      }
-      .navbar-logo {
-        display: block;
-        width: 100%;
-        height: auto;
-        max-height: 190px;
-        object-fit: contain;
-        object-position: center;
-        background: #fff;
-        border-radius: 10px;
+        padding: 20px;
+        border-radius: 16px 16px 0 0;
       }
       .header h1 {
-        margin: 0 0 18px;
-        font-size: clamp(23px, 4vw, 32px);
+        flex: 1;
+        margin: 0;
+        font-size: clamp(22px, 3.8vw, 30px);
         font-family: "Arial Black", Arial, sans-serif;
       }
       .header p {
@@ -62,18 +53,23 @@
       }
       .header-image {
         display: block;
-        width: 100%;
-        max-width: 520px;
-        height: auto;
-        margin-bottom: 12px;
+        flex: 0 1 340px;
+        width: 340px;
+        max-width: 42%;
+        height: 110px;
+        margin: 0;
+        padding: 6px;
+        object-fit: contain;
         border-radius: 12px;
         border: solid 2px var(--line);
+        background: white;
       }
       .panel {
         background: white;
         padding: 22px;
         border: 1px solid var(--line);
         border-top: 0;
+        border-radius: 0 0 18px 18px;
         box-shadow: 0 8px 24px #1233;
       }
       #surgery-calculator {
@@ -120,38 +116,20 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
       }
-      .spay-addons-scroll {
-        overflow-x: auto;
+      .procedure-addon-options .check {
+        cursor: pointer;
       }
-      .spay-addons-table {
-        width: 100%;
-        min-width: 640px;
-        border-collapse: collapse;
-        font-size: 13px;
+      .procedure-addon-options .check label {
+        display: flex;
+        flex: 1;
+        justify-content: space-between;
+        gap: 8px;
+        cursor: pointer;
       }
-      .spay-addons-table th,
-      .spay-addons-table td {
-        border: 1px solid var(--line);
-        padding: 7px;
-        text-align: center;
-      }
-      .spay-addons-table th:first-child,
-      .spay-addons-table td:first-child {
-        text-align: left;
-      }
-      .spay-addons-table label {
-        display: inline;
-        margin: 0;
-        font-weight: 500;
-      }
-      .spay-addons-table td:last-child {
+      .procedure-addon-price {
+        color: var(--teal);
         font-weight: 700;
-      }
-      .spay-addons-table input {
-        width: auto;
-        margin: 0 6px 0 0;
-        padding: 0;
-        vertical-align: middle;
+        white-space: nowrap;
       }
       .check {
         display: flex;
@@ -180,7 +158,7 @@
         overflow: auto;
         position: fixed;
         right: max(16px, calc((100vw - 1400px) / 2 + 16px));
-        top: 20px;
+        top: 44px;
         width: 300px;
         z-index: 10;
       }
@@ -320,6 +298,9 @@
       }
 
       @media (max-width: 1050px) {
+        .header {
+          margin-right: 0;
+        }
         #surgery-calculator {
           margin-right: 0;
         }
@@ -340,13 +321,21 @@
         .panel {
           padding: 16px;
         }
+        .header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 16px;
+          padding: 16px;
+        }
+        .header-image {
+          flex: none;
+          width: 100%;
+          max-width: 420px;
+          height: 110px;
+        }
         .wrap {
           margin: 8px auto;
           padding: 8px;
-        }
-        .navbar-logo {
-          max-height: 130px;
-          border-radius: 8px;
         }
       }
     </style>
@@ -499,20 +488,19 @@
           <div class="section" style="margin-top: 0">
             ADDITIONAL PROCEDURE
           </div>
-          <div class="spay-addons-scroll">
-            <table class="spay-addons-table">
-              <thead>
-                <tr>
-                  <th>Procedure</th>
-                  <th>Professional Fee</th>
-                  <th>Anesthetics</th>
-                  <th colspan="2">Consumables</th>
-                  <th>Additional Fee</th>
-                </tr>
-              </thead>
-              <tbody id="spayAddonOptions"></tbody>
-            </table>
+          <div class="checks procedure-addon-options" id="spayAddonOptions"></div>
+        </div>
+        <div
+          id="castrationAddonsWrap"
+          style="display: none; margin-top: 16px"
+        >
+          <div class="section" style="margin-top: 0">
+            ADDITIONAL PROCEDURE
           </div>
+          <div
+            class="checks procedure-addon-options"
+            id="castrationAddonOptions"
+          ></div>
         </div>
         <div class="section">Laboratory & Pre-Surgical Services</div>
         <div class="checks">
@@ -967,64 +955,70 @@
         ],
       };
       const spayAddonFees = {
-        pyometra: [
+        Dog: [
           {
             id: "spayPyometraUnder15",
-            maxWeightExclusive: 15,
             label: "Pyometra <15 kg",
-            professionalFee: 3000,
-            anesthetics: 1000,
-            consumables: "Suture (3)",
-            consumablesFee: 1500,
+            price: 5500,
           },
           {
             id: "spayPyometra16To20",
-            minBracket: 16,
-            maxBracket: 20,
             label: "Pyometra 16–20 kg",
-            professionalFee: 5000,
-            anesthetics: 1500,
-            consumables: "Suture (3)",
-            consumablesFee: 1500,
+            price: 8000,
           },
           {
             id: "spayPyometra21To30",
-            minBracket: 21,
-            maxBracket: 30,
             label: "Pyometra 21–30 kg",
-            professionalFee: 6500,
-            anesthetics: 2000,
-            consumables: "Suture (3)",
-            consumablesFee: 1500,
+            price: 10000,
           },
-        ],
-        fixed: [
           {
             id: "spayAbortion",
             label: "Abortion <1 mo",
-            professionalFee: 3000,
-            anesthetics: 1000,
-            consumables: "Suture (3)",
-            consumablesFee: 1500,
+            price: 5500,
           },
           {
             id: "spayVaginalProlapse",
             label: "Vaginal Prolapse",
-            professionalFee: 4000,
-            anesthetics: 1000,
-            consumables: "Suture (2)",
-            consumablesFee: 1000,
+            price: 6000,
           },
           {
             id: "spayUmbilicalHernia",
             label: "Umbilical Hernia Repair",
-            professionalFee: 2000,
-            anesthetics: 500,
-            consumables: "Suture",
-            consumablesFee: 500,
+            price: 3000,
+          },
+        ],
+        Cat: [
+          {
+            id: "spayCatPyometra",
+            label: "Pyometra",
+            price: 3500,
+          },
+          {
+            id: "spayCatAbortion",
+            label: "Abortion <1 mo",
+            price: 3500,
+          },
+          {
+            id: "spayCatVaginalProlapse",
+            label: "Vaginal Prolapse",
+            price: 4000,
           },
         ],
       };
+      const castrationAddonFees = [
+        { id: "castrationMonorchid", label: "Monorchid", price: 2000 },
+        { id: "castrationCryptorchid", label: "Cryptorchid", price: 3500 },
+        {
+          id: "castrationScrotalAblation",
+          label: "Scrotal Ablation",
+          price: 5000,
+        },
+        {
+          id: "castrationUmbilicalHernia",
+          label: "Umbilical Hernia Repair",
+          price: 3000,
+        },
+      ];
       const procedure = document.getElementById("procedure"),
         species = document.getElementById("species"),
         weight = document.getElementById("weight");
@@ -1039,66 +1033,38 @@
       function money(n) {
         return "₱" + Math.round(n).toLocaleString("en-PH");
       }
-      function getPyometraTier() {
-        const w = Number(weight.value);
-        if (!weight.value || w <= 0) return null;
-        const bracketWeight = Math.ceil(w);
-        return (
-          spayAddonFees.pyometra.find(
-            (tier) =>
-              (tier.maxWeightExclusive === undefined ||
-                w < tier.maxWeightExclusive) &&
-              (tier.minBracket === undefined ||
-                bracketWeight >= tier.minBracket) &&
-              (tier.maxBracket === undefined ||
-                bracketWeight <= tier.maxBracket),
-          ) || null
-        );
-      }
-      function getSpayAddonTotal(addon) {
-        return (
-          addon.professionalFee +
-          addon.anesthetics +
-          addon.consumablesFee
-        );
-      }
-      function getSpayAddonComponents(addon) {
-        return [
-          ["Professional Fee", addon.professionalFee],
-          ["Anesthetics", addon.anesthetics],
-          ["Consumables — " + addon.consumables, addon.consumablesFee],
-        ];
-      }
-      function renderSpayAddonOptions() {
-        const tbody = document.getElementById("spayAddonOptions");
-        const addRow = (addon, isPyometra) => {
-          const row = document.createElement("tr");
-          const procedureCell = document.createElement("td");
+      function renderAddonOptions(options, addons) {
+        addons.forEach((addon) => {
+          const option = document.createElement("div");
+          option.className = "check";
           const input = document.createElement("input");
-          input.type = isPyometra ? "radio" : "checkbox";
-          input.name = isPyometra ? "spayPyometra" : addon.id;
+          input.type = "checkbox";
+          input.name = addon.id;
           input.id = addon.id;
-          input.className = "spay-addon-option";
+          input.className = "procedure-addon-option";
           const label = document.createElement("label");
           label.htmlFor = addon.id;
-          label.textContent = addon.label;
-          procedureCell.append(input, label);
-          row.appendChild(procedureCell);
-          [
-            money(addon.professionalFee),
-            money(addon.anesthetics),
-            addon.consumables,
-            money(addon.consumablesFee),
-            money(getSpayAddonTotal(addon)),
-          ].forEach((value) => {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            row.appendChild(cell);
-          });
-          tbody.appendChild(row);
-        };
-        spayAddonFees.pyometra.forEach((addon) => addRow(addon, true));
-        spayAddonFees.fixed.forEach((addon) => addRow(addon, false));
+          const name = document.createElement("span");
+          name.textContent = addon.label;
+          const price = document.createElement("span");
+          price.className = "procedure-addon-price";
+          price.textContent = money(addon.price);
+          label.append(name, price);
+          option.append(input, label);
+          options.appendChild(option);
+        });
+      }
+      function renderSpayAddonOptions() {
+        const options = document.getElementById("spayAddonOptions");
+        if (options.dataset.species === species.value) return;
+        options.innerHTML = "";
+        const addons = spayAddonFees[species.value];
+        renderAddonOptions(options, addons);
+        options.dataset.species = species.value;
+      }
+      function renderCastrationAddonOptions() {
+        const options = document.getElementById("castrationAddonOptions");
+        renderAddonOptions(options, castrationAddonFees);
       }
       function getBracket() {
         const d = data[procedure.value];
@@ -1117,25 +1083,20 @@
           ) || null
         );
       }
-      function updateSpayAddonOptions(p) {
+      function updateProcedureAddonOptions(p) {
         const isSpay = p === "Ovariohysterectomy / Spay";
-        const pyometraTier = getPyometraTier();
-        const hasPyometraSelection = spayAddonFees.pyometra.some((addon) =>
-          document.getElementById(addon.id).checked,
-        );
-        spayAddonFees.pyometra.forEach((addon) => {
-          const input = document.getElementById(addon.id);
-          input.disabled = !isSpay || addon !== pyometraTier;
-          if (addon !== pyometraTier) input.checked = false;
-        });
-        if (isSpay && pyometraTier && hasPyometraSelection)
-          document.getElementById(pyometraTier.id).checked = true;
-        spayAddonFees.fixed.forEach((addon) => {
-          document.getElementById(addon.id).disabled = !isSpay;
-        });
+        const isCastration = p.replace(/\u200b/g, "") === "Castration";
+        document
+          .querySelectorAll(".procedure-addon-option")
+          .forEach((input) => {
+            input.disabled = input.closest("#castrationAddonOptions")
+              ? !isCastration
+              : !isSpay;
+          });
       }
       function updateSpecies() {
         const p = procedure.value;
+        const isCastration = p.replace(/\u200b/g, "") === "Castration";
         const hasCat = !!data[p].Cat,
           hasDog = !!data[p].Dog;
         [...species.options].forEach((o) => {
@@ -1149,6 +1110,8 @@
           p === "Dental Prophylaxis" ? "block" : "none";
         document.getElementById("spayAddonsWrap").style.display =
           p === "Ovariohysterectomy / Spay" ? "block" : "none";
+        document.getElementById("castrationAddonsWrap").style.display =
+          isCastration ? "block" : "none";
         document.getElementById("dentalNoteResult").style.display =
           p === "Dental Prophylaxis" ? "block" : "none";
         sub.innerHTML = "";
@@ -1161,6 +1124,7 @@
           });
         document.getElementById("biopsy").disabled = p !== "Tumor Removal";
         document.getElementById("emergency").disabled = false;
+        renderSpayAddonOptions();
         calculate();
       }
       function calculate() {
@@ -1168,7 +1132,7 @@
           d = data[p],
           br = getBracket(),
           rows = [];
-        updateSpayAddonOptions(p);
+        updateProcedureAddonOptions(p);
         let total = 0;
         if (!br) {
           document.getElementById("total").textContent = "—";
@@ -1216,19 +1180,19 @@
             });
         }
         if (p === "Ovariohysterectomy / Spay") {
-          const addComponents = (addon) => {
-            getSpayAddonComponents(addon).forEach(([component, amount]) => {
-              rows.push([addon.label + " — " + component, amount]);
-              total += amount;
-            });
-          };
-          const pyometraTier = spayAddonFees.pyometra.find((addon) =>
-            document.getElementById(addon.id).checked,
-          );
-          if (pyometraTier) addComponents(pyometraTier);
-          spayAddonFees.fixed.forEach((addon) => {
-            if (document.getElementById(addon.id).checked)
-              addComponents(addon);
+          spayAddonFees[species.value].forEach((addon) => {
+            if (document.getElementById(addon.id).checked) {
+              rows.push([addon.label, addon.price]);
+              total += addon.price;
+            }
+          });
+        }
+        if (p.replace(/\u200b/g, "") === "Castration") {
+          castrationAddonFees.forEach((addon) => {
+            if (document.getElementById(addon.id).checked) {
+              rows.push([addon.label, addon.price]);
+              total += addon.price;
+            }
           });
         }
         const add = (id, label, amount) => {
@@ -1316,12 +1280,14 @@
           "</b></td></tr>";
       }
       procedure.addEventListener("change", updateSpecies);
-      species.addEventListener("change", calculate);
+      species.addEventListener("change", updateSpecies);
       weight.addEventListener("input", calculate);
-      renderSpayAddonOptions();
       document
-        .querySelectorAll(".spay-addon-option")
-        .forEach((input) => input.addEventListener("change", calculate));
+        .getElementById("spayAddonOptions")
+        .addEventListener("change", calculate);
+      document
+        .getElementById("castrationAddonOptions")
+        .addEventListener("change", calculate);
       [
         "quantity",
         "iv",
@@ -1390,7 +1356,7 @@
           "extractDeciduous",
         ].forEach((id) => (document.getElementById(id).checked = false));
         document
-          .querySelectorAll(".spay-addon-option")
+          .querySelectorAll(".procedure-addon-option")
           .forEach((input) => (input.checked = false));
         document
           .querySelectorAll(".extract-quantity")
@@ -1423,6 +1389,7 @@
           .then(() => alert("Estimate copied."))
           .catch(() => alert(text));
       });
+      renderCastrationAddonOptions();
       updateSpecies();
     </script>
   </body>
