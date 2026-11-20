@@ -26,7 +26,7 @@
         color: var(--ink);
       }
       .wrap {
-        max-width: 1000px;
+        max-width: 1400px;
         margin: 28px auto;
         padding: 16px;
       }
@@ -63,9 +63,10 @@
       .header-image {
         display: block;
         width: 100%;
+        max-width: 520px;
         height: auto;
-        margin-bottom: 18px;
-        border-radius: 20px;
+        margin-bottom: 12px;
+        border-radius: 12px;
         border: solid 2px var(--line);
       }
       .panel {
@@ -74,6 +75,12 @@
         border: 1px solid var(--line);
         border-top: 0;
         box-shadow: 0 8px 24px #1233;
+      }
+      #surgery-calculator {
+        margin-right: 320px;
+      }
+      .calculator-form {
+        min-width: 0;
       }
       .grid {
         display: grid;
@@ -113,6 +120,39 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
       }
+      .spay-addons-scroll {
+        overflow-x: auto;
+      }
+      .spay-addons-table {
+        width: 100%;
+        min-width: 640px;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .spay-addons-table th,
+      .spay-addons-table td {
+        border: 1px solid var(--line);
+        padding: 7px;
+        text-align: center;
+      }
+      .spay-addons-table th:first-child,
+      .spay-addons-table td:first-child {
+        text-align: left;
+      }
+      .spay-addons-table label {
+        display: inline;
+        margin: 0;
+        font-weight: 500;
+      }
+      .spay-addons-table td:last-child {
+        font-weight: 700;
+      }
+      .spay-addons-table input {
+        width: auto;
+        margin: 0 6px 0 0;
+        padding: 0;
+        vertical-align: middle;
+      }
       .check {
         display: flex;
         align-items: center;
@@ -134,7 +174,15 @@
         border: 1px solid #b6e5e8;
         border-radius: 14px;
         padding: 18px;
-        margin-top: 20px;
+        box-shadow: 0 8px 24px #1233;
+        margin: 0;
+        max-height: calc(100vh - 40px);
+        overflow: auto;
+        position: fixed;
+        right: max(16px, calc((100vw - 1400px) / 2 + 16px));
+        top: 20px;
+        width: 300px;
+        z-index: 10;
       }
       .total {
         font-size: clamp(30px, 5vw, 42px);
@@ -271,6 +319,18 @@
         font-weight: 500;
       }
 
+      @media (max-width: 1050px) {
+        #surgery-calculator {
+          margin-right: 0;
+        }
+        .result {
+          margin-top: 20px;
+          position: static;
+          max-height: none;
+          width: auto;
+        }
+      }
+
       @media (max-width: 650px) {
         .grid,
         .checks,
@@ -302,6 +362,7 @@
         />
       </div>
       <div class="panel" id="surgery-calculator">
+        <div class="calculator-form">
         <div class="grid">
           <div>
             <label for="procedure">Procedure</label
@@ -323,6 +384,9 @@
               step="0.1"
               placeholder="Enter weight in kg"
             />
+            <small
+              >Fractional weights use the next whole-kilogram price band.</small
+            >
           </div>
           <div>
             <label for="quantity"
@@ -429,6 +493,25 @@
                 aria-label="Deciduous canine extraction quantity"
               />
             </div>
+          </div>
+        </div>
+        <div id="spayAddonsWrap" style="display: none; margin-top: 16px">
+          <div class="section" style="margin-top: 0">
+            ADDITIONAL PROCEDURE
+          </div>
+          <div class="spay-addons-scroll">
+            <table class="spay-addons-table">
+              <thead>
+                <tr>
+                  <th>Procedure</th>
+                  <th>Professional Fee</th>
+                  <th>Anesthetics</th>
+                  <th colspan="2">Consumables</th>
+                  <th>Additional Fee</th>
+                </tr>
+              </thead>
+              <tbody id="spayAddonOptions"></tbody>
+            </table>
           </div>
         </div>
         <div class="section">Laboratory & Pre-Surgical Services</div>
@@ -576,32 +659,6 @@
             />
           </div>
         </div>
-        <div class="result" aria-live="polite">
-          <div class="hint">Estimated total</div>
-          <div class="total" id="total">₱0</div>
-          <div
-            id="dentalNoteResult"
-            class="note"
-            style="display: none; margin-top: 12px"
-          >
-            <b>Dental Prophylaxis note:</b> Tooth extraction is only needed if
-            the veterinarian finds loose/moving teeth that need to be removed.
-            Select applicable extraction types and enter the quantity of each;
-            per-tooth prices are added to the Dental Prophylaxis fee. Premolar —
-            ₱2,500; Molar — ₱3,500; Incisors — ₱1,500; Canine — ₱5,500;
-            Deciduous canine — ₱2,500. Final extraction needs and charges depend
-            on the veterinary examination.
-          </div>
-          <div id="status" class="hint">
-            Choose a procedure and enter the patient's weight.
-          </div>
-          <table class="breakdown">
-            <tbody id="breakdown"></tbody>
-          </table>
-          <div class="actions">
-            <button id="copy">Copy estimate</button
-            ><button class="secondary" id="reset">Reset</button>
-          </div>
         </div>
         <div class="note">
           <b>Important:</b> This is an estimate based on the supplied price
@@ -613,6 +670,33 @@
           separately. Confirm the final quotation with the veterinarian. If a
           weight range or price is not listed, the calculator will not guess a
           price.
+        </div>
+      </div>
+      <div class="result" aria-live="polite">
+        <div class="hint">Estimated total</div>
+        <div class="total" id="total">₱0</div>
+        <div
+          id="dentalNoteResult"
+          class="note"
+          style="display: none; margin-top: 12px"
+        >
+          <b>Dental Prophylaxis note:</b> Tooth extraction is only needed if
+          the veterinarian finds loose/moving teeth that need to be removed.
+          Select applicable extraction types and enter the quantity of each;
+          per-tooth prices are added to the Dental Prophylaxis fee. Premolar —
+          ₱2,500; Molar — ₱3,500; Incisors — ₱1,500; Canine — ₱5,500;
+          Deciduous canine — ₱2,500. Final extraction needs and charges depend
+          on the veterinary examination.
+        </div>
+        <div id="status" class="hint">
+          Choose a procedure and enter the patient's weight.
+        </div>
+        <table class="breakdown">
+          <tbody id="breakdown"></tbody>
+        </table>
+        <div class="actions">
+          <button id="copy">Copy estimate</button
+          ><button class="secondary" id="reset">Reset</button>
         </div>
       </div>
       <footer>For clinic staff use. Prices are in Philippine pesos (₱).</footer>
@@ -771,7 +855,14 @@
             { min: 21, max: 25, price: 9000, label: "21–25 kg" },
             { min: 26, max: 30, price: 10000, label: "26–30 kg" },
           ],
-          Cat: [{ max: 5, price: 5000, label: "Up to 5 kg" }],
+          Cat: [
+            { max: 5, price: 5000, label: "Up to 5 kg" },
+            { min: 6, max: 10, price: 6000, label: "6–10 kg" },
+            { min: 11, max: 15, price: 7000, label: "11–15 kg" },
+            { min: 16, max: 20, price: 8000, label: "16–20 kg" },
+            { min: 21, max: 25, price: 9000, label: "21–25 kg" },
+            { min: 26, max: 30, price: 10000, label: "26–30 kg" },
+          ],
         },
         "Umbilical Hernia Repair": {
           Dog: [
@@ -875,6 +966,65 @@
           ["Umbilical hernia add-on (castration)", 3000],
         ],
       };
+      const spayAddonFees = {
+        pyometra: [
+          {
+            id: "spayPyometraUnder15",
+            maxWeightExclusive: 15,
+            label: "Pyometra <15 kg",
+            professionalFee: 3000,
+            anesthetics: 1000,
+            consumables: "Suture (3)",
+            consumablesFee: 1500,
+          },
+          {
+            id: "spayPyometra16To20",
+            minBracket: 16,
+            maxBracket: 20,
+            label: "Pyometra 16–20 kg",
+            professionalFee: 5000,
+            anesthetics: 1500,
+            consumables: "Suture (3)",
+            consumablesFee: 1500,
+          },
+          {
+            id: "spayPyometra21To30",
+            minBracket: 21,
+            maxBracket: 30,
+            label: "Pyometra 21–30 kg",
+            professionalFee: 6500,
+            anesthetics: 2000,
+            consumables: "Suture (3)",
+            consumablesFee: 1500,
+          },
+        ],
+        fixed: [
+          {
+            id: "spayAbortion",
+            label: "Abortion <1 mo",
+            professionalFee: 3000,
+            anesthetics: 1000,
+            consumables: "Suture (3)",
+            consumablesFee: 1500,
+          },
+          {
+            id: "spayVaginalProlapse",
+            label: "Vaginal Prolapse",
+            professionalFee: 4000,
+            anesthetics: 1000,
+            consumables: "Suture (2)",
+            consumablesFee: 1000,
+          },
+          {
+            id: "spayUmbilicalHernia",
+            label: "Umbilical Hernia Repair",
+            professionalFee: 2000,
+            anesthetics: 500,
+            consumables: "Suture",
+            consumablesFee: 500,
+          },
+        ],
+      };
       const procedure = document.getElementById("procedure"),
         species = document.getElementById("species"),
         weight = document.getElementById("weight");
@@ -889,6 +1039,67 @@
       function money(n) {
         return "₱" + Math.round(n).toLocaleString("en-PH");
       }
+      function getPyometraTier() {
+        const w = Number(weight.value);
+        if (!weight.value || w <= 0) return null;
+        const bracketWeight = Math.ceil(w);
+        return (
+          spayAddonFees.pyometra.find(
+            (tier) =>
+              (tier.maxWeightExclusive === undefined ||
+                w < tier.maxWeightExclusive) &&
+              (tier.minBracket === undefined ||
+                bracketWeight >= tier.minBracket) &&
+              (tier.maxBracket === undefined ||
+                bracketWeight <= tier.maxBracket),
+          ) || null
+        );
+      }
+      function getSpayAddonTotal(addon) {
+        return (
+          addon.professionalFee +
+          addon.anesthetics +
+          addon.consumablesFee
+        );
+      }
+      function getSpayAddonComponents(addon) {
+        return [
+          ["Professional Fee", addon.professionalFee],
+          ["Anesthetics", addon.anesthetics],
+          ["Consumables — " + addon.consumables, addon.consumablesFee],
+        ];
+      }
+      function renderSpayAddonOptions() {
+        const tbody = document.getElementById("spayAddonOptions");
+        const addRow = (addon, isPyometra) => {
+          const row = document.createElement("tr");
+          const procedureCell = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = isPyometra ? "radio" : "checkbox";
+          input.name = isPyometra ? "spayPyometra" : addon.id;
+          input.id = addon.id;
+          input.className = "spay-addon-option";
+          const label = document.createElement("label");
+          label.htmlFor = addon.id;
+          label.textContent = addon.label;
+          procedureCell.append(input, label);
+          row.appendChild(procedureCell);
+          [
+            money(addon.professionalFee),
+            money(addon.anesthetics),
+            addon.consumables,
+            money(addon.consumablesFee),
+            money(getSpayAddonTotal(addon)),
+          ].forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+          });
+          tbody.appendChild(row);
+        };
+        spayAddonFees.pyometra.forEach((addon) => addRow(addon, true));
+        spayAddonFees.fixed.forEach((addon) => addRow(addon, false));
+      }
       function getBracket() {
         const d = data[procedure.value];
         const s = d[species.value] || d.Any;
@@ -897,13 +1108,31 @@
           return s[0];
         const w = Number(weight.value);
         if (!weight.value || w <= 0) return null;
+        const bracketWeight = Math.ceil(w);
         return (
           s.find(
             (b) =>
-              (b.min === undefined || w >= b.min) &&
-              (b.max === undefined || w <= b.max),
+              (b.min === undefined || bracketWeight >= b.min) &&
+              (b.max === undefined || bracketWeight <= b.max),
           ) || null
         );
+      }
+      function updateSpayAddonOptions(p) {
+        const isSpay = p === "Ovariohysterectomy / Spay";
+        const pyometraTier = getPyometraTier();
+        const hasPyometraSelection = spayAddonFees.pyometra.some((addon) =>
+          document.getElementById(addon.id).checked,
+        );
+        spayAddonFees.pyometra.forEach((addon) => {
+          const input = document.getElementById(addon.id);
+          input.disabled = !isSpay || addon !== pyometraTier;
+          if (addon !== pyometraTier) input.checked = false;
+        });
+        if (isSpay && pyometraTier && hasPyometraSelection)
+          document.getElementById(pyometraTier.id).checked = true;
+        spayAddonFees.fixed.forEach((addon) => {
+          document.getElementById(addon.id).disabled = !isSpay;
+        });
       }
       function updateSpecies() {
         const p = procedure.value;
@@ -918,6 +1147,8 @@
         subWrap.style.display = extras[p] ? "block" : "none";
         document.getElementById("dentalExtractionWrap").style.display =
           p === "Dental Prophylaxis" ? "block" : "none";
+        document.getElementById("spayAddonsWrap").style.display =
+          p === "Ovariohysterectomy / Spay" ? "block" : "none";
         document.getElementById("dentalNoteResult").style.display =
           p === "Dental Prophylaxis" ? "block" : "none";
         sub.innerHTML = "";
@@ -937,6 +1168,7 @@
           d = data[p],
           br = getBracket(),
           rows = [];
+        updateSpayAddonOptions(p);
         let total = 0;
         if (!br) {
           document.getElementById("total").textContent = "—";
@@ -982,6 +1214,22 @@
               ]);
               total += amount;
             });
+        }
+        if (p === "Ovariohysterectomy / Spay") {
+          const addComponents = (addon) => {
+            getSpayAddonComponents(addon).forEach(([component, amount]) => {
+              rows.push([addon.label + " — " + component, amount]);
+              total += amount;
+            });
+          };
+          const pyometraTier = spayAddonFees.pyometra.find((addon) =>
+            document.getElementById(addon.id).checked,
+          );
+          if (pyometraTier) addComponents(pyometraTier);
+          spayAddonFees.fixed.forEach((addon) => {
+            if (document.getElementById(addon.id).checked)
+              addComponents(addon);
+          });
         }
         const add = (id, label, amount) => {
           if (document.getElementById(id).checked) {
@@ -1070,6 +1318,10 @@
       procedure.addEventListener("change", updateSpecies);
       species.addEventListener("change", calculate);
       weight.addEventListener("input", calculate);
+      renderSpayAddonOptions();
+      document
+        .querySelectorAll(".spay-addon-option")
+        .forEach((input) => input.addEventListener("change", calculate));
       [
         "quantity",
         "iv",
@@ -1137,6 +1389,9 @@
           "extractCanine",
           "extractDeciduous",
         ].forEach((id) => (document.getElementById(id).checked = false));
+        document
+          .querySelectorAll(".spay-addon-option")
+          .forEach((input) => (input.checked = false));
         document
           .querySelectorAll(".extract-quantity")
           .forEach((input) => (input.value = 1));
